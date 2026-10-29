@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="it" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <!-- SEO -->
+  <title>FreeStonic – Lista Spesa Familiare Cifrata</title>
+  <meta name="description" content="Lista della spesa collaborativa per la famiglia. Cifrata end-to-end, nessuna pubblicità, nessun tracker. Installabile come app." />
+  <meta name="theme-color" content="#6C63FF" />
+  <meta name="robots" content="noindex,nofollow" /><!-- App privata, non indicizzare -->
+
+  <!-- PWA -->
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/png" href="./icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="FreeStonic" />
+  <meta name="mobile-web-app-capable" content="yes" />
+
+  <!-- Open Graph (per condivisione link) -->
+  <meta property="og:title" content="FreeStonic – Lista Spesa Familiare" />
+  <meta property="og:description" content="Lista della spesa cifrata E2E. Unisciti alla tua famiglia!" />
+  <meta property="og:type" content="website" />
+
+  <!-- Stili -->
+  <link rel="stylesheet" href="./style.css" />
+
+  <!-- Preconnect per font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- Supabase JS v2 (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+  <!-- QRCode.js (per modale condivisione) -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+<!-- ─────────────────────────────────────────────────────────── -->
+<!-- APP ROOT                                                     -->
+<!-- ─────────────────────────────────────────────────────────── -->
+<div id="app" role="main">
+
+  <!-- ══════════════════════════════════════════════════════════
+       SCREEN: LOADING (transizione silenziosa)
+  ═══════════════════════════════════════════════════════════ -->
+  <div id="screen-loading" class="screen active" aria-label="Caricamento" role="status">
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;padding:2rem;">
+      <div class="logo-icon" style="animation: logoPulse 1.5s ease-in-out infinite;">🛒</div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:0.5rem;">
+        <div class="spinner" style="display:block;width:28px;height:28px;border-color:rgba(108,99,255,0.25);border-top-color:var(--c-primary);"></div>
+        <p style="color:var(--c-text-muted);font-size:0.875rem;">Caricamento…</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SCREEN: WELCOME
+  ═══════════════════════════════════════════════════════════ -->
+  <div id="screen-welcome" class="screen" aria-labelledby="welcome-heading">
+
+    <div class="welcome-logo">
+      <div class="logo-icon" role="img" aria-label="FreeStonic app icon">🛒</div>
+      <h1 id="welcome-heading">FreeStonic</h1>
+      <p class="tagline">Lista della spesa familiare<br>collaborativa e privata</p>
+
+      <span class="badge-security" role="note">
+        🔐 Cifrata AES-256 end-to-end · Zero tracker
+      </span>
+    </div>
+
+    <div class="welcome-actions" role="group" aria-label="Opzioni di accesso">
+      <button id="btn-create" class="btn btn-primary btn-full" type="button">
+        ✨ Crea nuova Famiglia
+      </button>
+      <button id="btn-join" class="btn btn-secondary btn-full" type="button">
+        🔗 Unisciti a una Famiglia
+      </button>
+    </div>
+
+    <p style="font-size:0.75rem;color:var(--c-text-faint);text-align:center;max-width:280px;">
+      I tuoi dati non sono mai inviati in chiaro. La cifratura avviene nel tuo browser.
+    </p>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SCREEN: AUTH (Crea / Unisciti)
+  ═══════════════════════════════════════════════════════════ -->
+  <div id="screen-auth" class="screen" aria-labelledby="auth-heading">
+
+    <div class="auth-header">
+      <button id="auth-back" class="btn btn-icon" type="button" aria-label="Torna alla schermata precedente">←</button>
+      <h2 id="auth-heading" class="auth-title">Crea nuova Famiglia</h2>
+    </div>
+
+    <div class="card">
+
+      <!-- Errore -->
+      <div id="auth-error" class="alert alert-error hidden" role="alert" aria-live="polite">
+        ⚠️ <span></span>
+      </div>
+
+      <!-- [CREA] Mostra ID generato -->
+      <div id="auth-newid-group" class="form-group">
+        <label>ID della tua Famiglia</label>
+        <div class="id-display">
+          <span id="auth-newid-display" aria-label="ID famiglia generato automaticamente"></span>
+          <button id="auth-newid-copy" class="copy-btn" type="button" aria-label="Copia ID famiglia">📋</button>
+        </div>
+        <p class="input-hint">
+          🔐 Questo ID è il tuo identificativo. Salvalo e condividilo con i familiari.
+        </p>
+      </div>
+
+      <!-- [UNISCITI] Inserisci ID -->
+      <div id="auth-id-group" class="form-group hidden">
+        <label for="auth-id-input">ID della Famiglia</label>
+        <input
+          id="auth-id-input"
+          type="text"
+          placeholder="Es. aB3xK9mQ…"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="none"
+          spellcheck="false"
+          aria-describedby="auth-id-hint"
+        />
+        <p id="auth-id-hint" class="input-hint">
+          Chiedi l'ID al familiare che ha creato la lista.
+        </p>
+      </div>
+
+      <!-- Password comune -->
+      <div class="form-group">
+        <label for="auth-password">Password della Famiglia</label>
+        <input
+          id="auth-password"
+          type="password"
+          placeholder="Minimo 4 caratteri"
+          autocomplete="current-password"
+          aria-describedby="auth-pwd-hint"
+          minlength="4"
+        />
+        <p id="auth-pwd-hint" class="input-hint">
+          🔑 Questa password cifra i tuoi dati localmente. Non viene mai inviata ai server.
+        </p>
+      </div>
+
+      <div class="alert alert-info" role="note">
+        🛡️ La password viene usata solo per cifrare/decifrare i dati nel tuo browser.
+        Nessun account, nessun server conosce la tua password.
+      </div>
+
+      <button id="btn-auth-submit" class="btn btn-primary btn-full" type="button">
+        <div class="spinner"></div>
+        <span class="btn-label">Accedi</span>
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SCREEN: APP PRINCIPALE
+  ═══════════════════════════════════════════════════════════ -->
+  <div id="screen-app" class="screen" aria-label="Lista della spesa">
+
+    <!-- Top Bar -->
+    <header class="topbar" role="banner">
+      <div class="topbar-title">
+        <h1>Lista Spesa</h1>
+        <div class="family-hint" aria-live="polite">
+          <span id="connection-dot" class="connection-dot" aria-label="Connesso in tempo reale"></span>
+          <span id="family-short-id" aria-label="ID famiglia">—</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button id="btn-share" class="btn btn-icon" type="button" title="Condividi famiglia" aria-label="Condividi famiglia">📤</button>
+        <button id="btn-logout" class="btn btn-icon" type="button" title="Cambia famiglia" aria-label="Cambia famiglia">⚙️</button>
+      </div>
+    </header>
+
+    <!-- Filtro Categorie -->
+    <nav class="category-filter" id="category-filter-bar" role="navigation" aria-label="Filtra per categoria">
+      <!-- Generato da JS -->
+    </nav>
+
+    <!-- Skeleton loading -->
+    <div id="skeleton-list" class="grocery-list-wrapper" aria-hidden="true">
+      <div class="skeleton skeleton-item"></div>
+      <div class="skeleton skeleton-item" style="width:85%;"></div>
+      <div class="skeleton skeleton-item" style="width:92%;"></div>
+      <div class="skeleton skeleton-item" style="width:75%;"></div>
+    </div>
+
+    <!-- Lista articoli (generata da JS) -->
+    <div id="grocery-list-container" class="grocery-list-wrapper hidden" role="list" aria-label="Articoli da acquistare">
+      <!-- Generato da renderList() -->
+    </div>
+
+    <!-- Input Bar (sticky in basso) -->
+    <div class="input-bar" role="form" aria-label="Aggiungi articolo">
+      <!-- Suggerimenti rapidi -->
+      <div id="suggestions-bar" class="suggestions" role="group" aria-label="Suggerimenti rapidi">
+        <!-- Generato da updateSuggestions() -->
+      </div>
+
+      <div class="input-bar-inner">
+        <!-- Picker categoria -->
+        <button
+          id="category-picker-btn"
+          class="category-picker"
+          type="button"
+          aria-label="Seleziona categoria"
+          aria-haspopup="dialog"
+        >
+          <span class="cat-emoji">🛒</span>
+          <span class="cat-label">Altro</span>
+        </button>
+
+        <!-- Campo testo -->
+        <input
+          id="item-input"
+          type="text"
+          placeholder="Aggiungi articolo…"
+          maxlength="200"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+          aria-label="Nome articolo da aggiungere"
+          enterkeyhint="done"
+        />
+
+        <!-- Pulsante aggiungi -->
+        <button id="add-btn" type="button" aria-label="Aggiungi articolo alla lista">
+          ＋
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /screen-app -->
+
+</div><!-- /app -->
+
+<!-- ─────────────────────────────────────────────────────────── -->
+<!-- MODAL: SELEZIONA CATEGORIA                                   -->
+<!-- ─────────────────────────────────────────────────────────── -->
+<div
+  id="category-modal"
+  class="modal-overlay"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="cat-modal-title"
+>
+  <div class="modal-sheet">
+    <div class="modal-handle" aria-hidden="true"></div>
+    <h2 id="cat-modal-title" class="modal-title">Seleziona Categoria</h2>
+    <div id="category-options" class="category-grid" role="group" aria-label="Categorie disponibili">
+      <!-- Generato da buildCategoryOptions() -->
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────────────────────── -->
+<!-- MODAL: CONDIVIDI FAMIGLIA                                    -->
+<!-- ─────────────────────────────────────────────────────────── -->
+<div
+  id="share-modal"
+  class="modal-overlay"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="share-modal-title"
+>
+  <div class="modal-sheet">
+    <div class="modal-handle" aria-hidden="true"></div>
+    <h2 id="share-modal-title" class="modal-title">Condividi Famiglia 📤</h2>
+
+    <div class="qr-container">
+      <div id="qr-canvas-wrapper" aria-label="QR code per unirsi alla famiglia"></div>
+      <p style="font-size:0.75rem;color:var(--c-text-muted);text-align:center;">
+        Inquadra con la fotocamera o condividi il link
+      </p>
+    </div>
+
+    <div
+      id="share-link-display"
+      class="share-link-box"
+      role="textbox"
+      aria-label="Link di condivisione"
+      aria-readonly="true"
+      tabindex="0"
+    ></div>
+
+    <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1rem;">
+      <button id="btn-copy-link" class="btn btn-primary btn-full" type="button">
+        📋 Copia Link di Invito
+      </button>
+      <button
+        class="btn btn-ghost btn-full"
+        type="button"
+        onclick="document.getElementById('share-modal').classList.remove('open')"
+      >
+        Chiudi
+      </button>
+    </div>
+
+    <p style="font-size:0.7rem;color:var(--c-text-faint);text-align:center;margin-top:0.75rem;line-height:1.5;">
+      ⚠️ Il link include la password. Condividilo solo tramite canali privati (es. WhatsApp familiare).
+    </p>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────────────────────── -->
+<!-- TOAST NOTIFICATIONS                                          -->
+<!-- ─────────────────────────────────────────────────────────── -->
+<div id="toast-container" role="status" aria-live="polite" aria-atomic="false"></div>
+
+<!-- ─────────────────────────────────────────────────────────── -->
+<!-- OFFLINE BANNER                                               -->
+<!-- ─────────────────────────────────────────────────────────── -->
+<div id="offline-banner" role="alert" aria-live="assertive">
+  📡 Sei offline – le modifiche saranno sincronizzate alla riconnessione
+</div>
+
+<!-- ─────────────────────────────────────────────────────────── -->
+<!-- APP SCRIPT (ES Module)                                       -->
+<!-- ─────────────────────────────────────────────────────────── -->
+<script type="module" src="./app.js"></script>
+
+</body>
+</html>
