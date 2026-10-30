@@ -32,7 +32,7 @@ import {
 // ──────────────────────────────────────────────────────────────
 // CONFIG – sostituisci con le tue credenziali Supabase
 // ──────────────────────────────────────────────────────────────
-const SUPABASE_URL    = 'https://nsqpyainmwpujiudfoxj.supabase.co';
+const SUPABASE_URL    = 'https://nsqpyainmwpujludfoxj.supabase.co';
 const SUPABASE_ANON   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zcXB5YWlubXdwdWpsdWRmb3hqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyNzQzNjIsImV4cCI6MjEwODg1MDM2Mn0._9NghU12y75AoKu2eGZP4l0MR1wiDM1R-pAPztMOoy0';
 
 // ──────────────────────────────────────────────────────────────
