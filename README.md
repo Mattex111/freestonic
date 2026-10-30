@@ -1,4 +1,4 @@
-# 🛒 FreeStonic – Lista Spesa Familiare Cifrata
+# FreeStonic – Lista Spesa Familiare Cifrata
 
 > **App live:** [https://mattex111.github.io/freestonic/](https://mattex111.github.io/freestonic/)
 
@@ -6,21 +6,21 @@ Lista della spesa collaborativa per la famiglia — cifrata end-to-end, installa
 
 ---
 
-## ✨ Funzionalità
+## Funzionalità
 
-- 🔐 **Cifratura Zero-Knowledge** — i dati vengono cifrati nel browser prima di essere inviati al server. Il database non conosce mai il contenuto degli articoli.
-- 👨‍👩‍👧 **Collaborazione familiare** — tutti i membri della famiglia vedono la lista in tempo reale.
-- 📱 **PWA installabile** — aggiungila alla schermata Home come un'app nativa.
-- 🔄 **Sync istantanea** — Supabase Realtime sincronizza aggiunte, spunte ed eliminazioni tra tutti i dispositivi connessi.
-- 📶 **Offline ready** — funziona anche senza connessione grazie al Service Worker.
-- 🗂️ **Categorie** — Frutta & Verdura, Latticini, Carne & Pesce, Dispensa, Bevande, Detergenti, Altro.
-- 👆 **Swipe per eliminare** — gesto nativo CSS Scroll Snap, nessuna libreria esterna.
-- 🔗 **Condivisione via QR o link** — invita i familiari in un tap.
-- 🚫 **Zero tracker, zero pubblicità**
+- **Cifratura Zero-Knowledge** — i dati vengono cifrati nel browser prima di essere inviati al server. Il database non conosce mai il contenuto degli articoli.
+- **Collaborazione familiare** — tutti i membri della famiglia vedono la lista in tempo reale.
+- **PWA installabile** — aggiungila alla schermata Home come un'app nativa.
+- **Sync istantanea** — Supabase Realtime sincronizza aggiunte, spunte ed eliminazioni tra tutti i dispositivi connessi.
+- **Offline ready** — funziona anche senza connessione grazie al Service Worker.
+- **Categorie** — Frutta & Verdura, Latticini, Carne & Pesce, Dispensa, Bevande, Detergenti, Altro.
+- **Swipe per eliminare** — gesto nativo CSS Scroll Snap, nessuna libreria esterna.
+- **Condivisione via QR o link** — invita i familiari in un tap.
+- **Zero tracker, zero pubblicità**
 
 ---
 
-## 🔐 Come funziona la crittografia
+## Come funziona la crittografia
 
 ```
 Password famiglia + Family ID
@@ -45,7 +45,7 @@ ciphertext  testo
 
 ---
 
-## 🛠️ Stack Tecnico
+## Stack Tecnico
 
 | Layer | Tecnologia |
 |---|---|
@@ -59,7 +59,7 @@ ciphertext  testo
 
 ---
 
-## 🚀 Setup Locale
+## Setup Locale
 
 ### 1. Clona il repository
 
