@@ -365,8 +365,9 @@ async function loadItems() {
     .order('created_at', { ascending: true });
 
   if (error) {
-    console.error('Load error:', error);
-    showToast('Errore nel caricamento degli articoli', 'error');
+    console.error('Load error full:', error);
+    const msg = error?.message || error?.code || JSON.stringify(error);
+    showToast('❌ LOAD: ' + msg, 'error');
     showSkeletons(false);
     return;
   }
