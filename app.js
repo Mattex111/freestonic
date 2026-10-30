@@ -453,8 +453,9 @@ async function handleAddItem() {
     renderList();
 
   } catch (err) {
-    console.error('Add error:', err);
-    showToast('Errore nell\'aggiunta dell\'articolo', 'error');
+    console.error('Add error full:', err);
+    const msg = err?.message || err?.error_description || JSON.stringify(err);
+    showToast('❌ ' + msg, 'error');
   }
 }
 
